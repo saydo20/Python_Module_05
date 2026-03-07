@@ -11,11 +11,10 @@ class DataProcessor(ABC):
     def validate(self, data: Any) -> bool:
         pass
 
+    def format_output(self, result: str) -> str:
+        return result
 
-class NumericProcessor():
-    def process(self, data: Any) -> str:
-        return f"Processing data: {data}"
-
+class NumericProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         try:
             if isinstance(data, list) and all(
@@ -29,20 +28,17 @@ class NumericProcessor():
             print(f"error : {error}")
             return False
 
-    def format_output(self, result: str) -> str:
+    def process(self, data: Any) -> str:
         try:
-            avg = sum(result) / len(result)
-            str1 = f"Output: Processed {len(result)} "
-            str2 = f"numeric values, sum={sum(result)}, avg={avg}"
-            return str1 + str2
+            avg = sum(data) / len(data)
+            output = (f"Output: Processed {len(data)} "
+                      f"numeric values, sum={sum(data)}, avg={avg}")
+            return super().format_output(output)
         except Exception as error:
             print(f"error: {error}")
 
-
-class TextProcessor():
-    def process(self, data: Any) -> str:
-        return f"Processing data: {data}"
-
+    
+class TextProcessor(DataProcessor):
     def validate(self, data: List[int]) -> bool:
         try:
             if isinstance(data, str):
@@ -54,29 +50,19 @@ class TextProcessor():
         except Exception as error:
             print(f"error: {error}")
 
-    def format_output(self, result: str) -> str:
+    def process(self, data: Any) -> str:
         try:
-            words = len(result.split())
-            str1 = f"Output: Processed text: {len(result)}"
-            str2 = f"characters, {words} words"
-            return str1 + str2
+            words = len(data.split())
+            output = (f"Output: Processed text: {len(data)} "
+                      f"characters, {words} words")
+            return super().format_output(output)
+            
         except Exception as error:
             print(f"error: {error}")
 
 
-class LogProcessor():
+class LogProcessor(DataProcessor):
     def process(self, data: Any) -> str:
-        return f"Processing data: {data}"
-
-    def validate(self, data: Any) -> bool:
-        if data.startswith(("ERROR", "INFO")):
-            print("Validation: Log entry verified")
-            return True
-        else:
-            print("the data has not be verified")
-            return False
-
-    def format_output(self, result: str) -> str:
         try:
             if result.upper().startswith("ERROR"):
                 message = result.split("ERROR")[1]
@@ -91,22 +77,30 @@ class LogProcessor():
         except Exception as error:
             print(f"error: {error}")
 
+    def validate(self, data: Any) -> bool:
+        if data.startswith(("ERROR", "INFO")):
+            print("Validation: Log entry verified")
+            return True
+        else:
+            print("the data has not be verified")
+            return False
+
 
 def main() -> None:
     print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
     print("Initializing Numeric Processor...")
     numric_data = [1, 2, 3, 4, 5]
-    numric_proces = NumericProcessor()
-    print(numric_proces.process(numric_data))
-    numric_proces.validate(numric_data)
-    print(numric_proces.format_output(numric_data))
+    print(f"Processing data: {numric_data}")
+    numeric_proces = NumericProcessor()
+    numeric_proces.validate(numric_data)
+    print(numeric_proces.process(numric_data))
     print()
     print("Initializing Text Processor...")
     text_data = "Hello Nexus World"
+    print(f'Processing data: "{text_data}"')
     text_proces = TextProcessor()
-    print(text_proces.process(text_data))
     text_proces.validate(text_data)
-    print(text_proces.format_output(text_data))
+    print(text_proces.process(text_data))
     print()
     print("Initializing Log Processor...")
     log_data = "ERROR: Connection timeout"
