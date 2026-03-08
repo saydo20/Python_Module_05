@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any, List, Dict
 
 
 class DataProcessor(ABC):
@@ -14,10 +14,11 @@ class DataProcessor(ABC):
     def format_output(self, result: str) -> str:
         return result
 
+
 class NumericProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         try:
-            if isinstance(data, list) and all(
+            if isinstance(data, List) and all(
                isinstance(x, int) for x in data):
                 print("Validation: Numeric data verified")
                 return True
@@ -37,9 +38,9 @@ class NumericProcessor(DataProcessor):
         except Exception as error:
             print(f"error: {error}")
 
-    
+
 class TextProcessor(DataProcessor):
-    def validate(self, data: List[int]) -> bool:
+    def validate(self, data: Any) -> bool:
         try:
             if isinstance(data, str):
                 print("Validation: Text data verified")
@@ -56,60 +57,76 @@ class TextProcessor(DataProcessor):
             output = (f"Output: Processed text: {len(data)} "
                       f"characters, {words} words")
             return super().format_output(output)
-            
         except Exception as error:
             print(f"error: {error}")
 
 
 class LogProcessor(DataProcessor):
-    def process(self, data: Any) -> str:
+    def validate(self, data: Any) -> bool:
         try:
-            if result.upper().startswith("ERROR"):
-                message = result.split("ERROR")[1]
-                str1 = "Output: [ALERT] ERROR level detected: "
-                str2 = f"{message.strip()}"
-                return str1 + str2
-            elif result.upper().startswith("INFO"):
-                message = result.split("INFO")[1]
-                str1 = "Output: [INFO] INFO level detected: "
-                str2 = f"{result.strip()}"
-                return str1 + str2
+            if data.startswith(("ERROR", "INFO")):
+                print("Validation: Log entry verified")
+                return True
+            else:
+                print("the data has not be verified")
+                return False
         except Exception as error:
             print(f"error: {error}")
 
-    def validate(self, data: Any) -> bool:
-        if data.startswith(("ERROR", "INFO")):
-            print("Validation: Log entry verified")
-            return True
-        else:
-            print("the data has not be verified")
-            return False
+    def process(self, data: Any) -> str:
+        try:
+            if data.upper().startswith("ERROR"):
+                message = data.split(":")[1]
+                output = ("Output: [ALERT] ERROR level detected: "
+                          f"{message.strip()}")
+                return super().format_output(output)
+            elif data.upper().startswith("INFO"):
+                message = data.split(":")[1]
+                output = ("Output: [INFO] INFO level detected: "
+                          f"{message.strip()}")
+                return super().format_output(output)
+        except Exception as error:
+            print(f"error: {error}")
 
 
 def main() -> None:
-    print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
-    print("Initializing Numeric Processor...")
-    numric_data = [1, 2, 3, 4, 5]
-    print(f"Processing data: {numric_data}")
-    numeric_proces = NumericProcessor()
-    numeric_proces.validate(numric_data)
-    print(numeric_proces.process(numric_data))
-    print()
-    print("Initializing Text Processor...")
-    text_data = "Hello Nexus World"
-    print(f'Processing data: "{text_data}"')
-    text_proces = TextProcessor()
-    text_proces.validate(text_data)
-    print(text_proces.process(text_data))
-    print()
-    print("Initializing Log Processor...")
-    log_data = "ERROR: Connection timeout"
-    log_proces = LogProcessor()
-    print(log_proces.process(log_data))
-    log_proces.validate(log_data)
-    print(log_proces.format_output(log_data))
-    print("\n=== Polymorphic Processing Demo ===")
-    print("Processing multiple data types through same interface...")
+    try:
+        print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
+        print("Initializing Numeric Processor...")
+        numric_data = [1, 2, 3, 4, 5]
+        print(f"Processing data: {numric_data}")
+        numeric_proces = NumericProcessor()
+        numeric_proces.validate(numric_data)
+        print(numeric_proces.process(numric_data))
+        print()
+        print("Initializing Text Processor...")
+        text_data = "Hello Nexus World"
+        print(f'Processing data: "{text_data}"')
+        text_proces = TextProcessor()
+        text_proces.validate(text_data)
+        print(text_proces.process(text_data))
+        print()
+        print("Initializing Log Processor...")
+        log_data = "ERROR: Connection timeout"
+        print(f'Processing data: "{log_data}"')
+        log_proces = LogProcessor()
+        log_proces.validate(log_data)
+        print(log_proces.process(log_data))
+        print("\n=== Polymorphic Processing Demo ===")
+        print("Processing multiple data types through same interface...")
+        processors = [NumericProcessor(), TextProcessor(), LogProcessor()]
+        data_list: Dict = {
+                            "numerc": [1, 2, 3],
+                            "text": "Hello  Nexus",
+                            "log": "INFO: System ready"
+                          }
+        for i, (processor, data) in enumerate(
+                zip(processors, data_list.values()), start=1):
+            result = processor.process(data).replace("Output", f"result {i}")
+            print(result)
+        print("\nFoundation systems online. Nexus ready for advanced streams.")
+    except Exception as error:
+        print(f"error : {error}")
 
 
 main()
