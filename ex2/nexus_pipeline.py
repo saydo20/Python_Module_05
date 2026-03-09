@@ -3,17 +3,22 @@ from abc import ABC, abstractmethod
 import json
 
 
+class ProcessingStage(Protocol):
+    def process(self, data: Any) -> Any:
+        ...
+
+
 class ProcessingPipeline(ABC):
-    def __init__(self, pipeline_id: str):
+    def __init__(self, pipeline_id: str) -> None:
         self.pipeline_id = pipeline_id
-        self.stages: List = []
+        self.stages: List[ProcessingStage] = []
         self.backup_stages = []
 
     @abstractmethod
     def process(self, data: Any) -> Any:
         ...
 
-    def add_stage(self, stage):
+    def add_stage(self, stage: ProcessingStage) -> None:
         self.stages.append(stage)
 
     def run_stages(self, data: Any) -> Any:
@@ -25,13 +30,8 @@ class ProcessingPipeline(ABC):
                 raise ValueError(f"Stage {i}: {e}")
         return result
 
-    def add_backup_stage(self, stage):
+    def add_backup_stage(self, stage: ProcessingStage) -> None:
         self.backup_stages.append(stage)
-
-
-class ProcessingStage(Protocol):
-    def process(self, data: Any) -> Any:
-        ...
 
 
 class InputStage():
@@ -83,7 +83,7 @@ class OutputStage():
 
 
 class JSONAdapter(ProcessingPipeline):
-    def __init__(self, pipeline_id):
+    def __init__(self, pipeline_id: str) -> None:
         super().__init__(pipeline_id)
 
     def process(self, data: Any) -> Union[str, Any]:
@@ -96,7 +96,7 @@ class JSONAdapter(ProcessingPipeline):
 
 
 class CSVAdapter(ProcessingPipeline):
-    def __init__(self, pipeline_id):
+    def __init__(self, pipeline_id: str) -> None:
         super().__init__(pipeline_id)
 
     def process(self, data: Any) -> Union[str, Any]:
@@ -106,7 +106,7 @@ class CSVAdapter(ProcessingPipeline):
 
 
 class StreamAdapter(ProcessingPipeline):
-    def __init__(self, pipeline_id):
+    def __init__(self, pipeline_id: str) -> None:
         super().__init__(pipeline_id)
 
     def process(self, data: Any) -> Union[str, Any]:
@@ -116,14 +116,14 @@ class StreamAdapter(ProcessingPipeline):
 
 
 class NexusManager():
-    def __init__(self):
-        self.pipelines = []
+    def __init__(self) -> None:
+        self.pipelines: List[ProcessingPipeline] = []
         self.errors = 0
 
-    def add_pipeline(self, pipeline):
+    def add_pipeline(self, pipeline: ProcessingPipeline) -> None:
         self.pipelines.append(pipeline)
 
-    def process_data(self, data):
+    def process_data(self, data: Any) -> None:
         result = data
         for pipeline in self.pipelines:
             try:

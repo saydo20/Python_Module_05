@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Dict
+from typing import Any, Dict
 
 
 class DataProcessor(ABC):
@@ -18,8 +18,8 @@ class DataProcessor(ABC):
 class NumericProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         try:
-            if isinstance(data, List) and all(
-               isinstance(x, int) for x in data):
+            if isinstance(data, list) and all(
+               isinstance(x, (int, float)) for x in data):
                 print("Validation: Numeric data verified")
                 return True
             else:
@@ -50,6 +50,7 @@ class TextProcessor(DataProcessor):
                 return False
         except Exception as error:
             print(f"error: {error}")
+            return False
 
     def process(self, data: Any) -> str:
         try:
@@ -72,6 +73,7 @@ class LogProcessor(DataProcessor):
                 return False
         except Exception as error:
             print(f"error: {error}")
+            return False
 
     def process(self, data: Any) -> str:
         try:
